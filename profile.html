@@ -6,29 +6,17 @@
     <title>My Profile</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Styles for the loading spinner */
-        .loading-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 80vh;
-        }
+        .loading-container { display: flex; justify-content: center; align-items: center; height: 80vh; }
     </style>
 </head>
 <body>
 
-    <!-- This is the loading spinner that shows first -->
+    <!-- This loading spinner is shown by default -->
     <div id="loading-spinner" class="loading-container">
-        <p>Loading Profile...</p>
+        <p>Verifying access...</p>
     </div>
 
-    <!-- 
-        ==================================================================
-        This container holds all the page content.
-        It is hidden by default and will only be shown by the auth-guard
-        after a successful login check.
-        ==================================================================
-    -->
+    <!-- This container is hidden by default and only shown by the gatekeeper -->
     <main id="protected-content" class="container" style="display: none;">
         <header class="page-header">
             <a href="index.html" class="back-arrow">&larr;</a>
@@ -36,7 +24,7 @@
         </header>
 
         <section class="profile-section" id="user-details-section">
-            <!-- User info will be loaded here by profile.js -->
+            <!-- Profile.js will load user details here -->
         </section>
 
         <section class="profile-section">
@@ -44,7 +32,9 @@
             <form id="address-form" class="address-form">
                 <input type="text" id="address-name" placeholder="Full Name" required>
                 <input type="text" id="address-line1" placeholder="Address Line 1" required>
-                <!-- Add other address fields here -->
+                <input type="text" id="address-city" placeholder="City" required>
+                <input type="text" id="address-pincode" placeholder="Pincode" required>
+                <input type="tel" id="address-phone" placeholder="Phone Number" required>
                 <button type="submit">Save Address</button>
             </form>
         </section>
@@ -57,27 +47,22 @@
         <button id="logout-btn" class="logout-button">Logout</button>
     </main>
 
-    <!-- Navigation Bar -->
+    <!-- Nav Bar is outside the main content -->
     <nav class="bottom-nav">
-        <!-- Add your corrected nav bar icons here, with this page's icon set to 'active' -->
+        <!-- Your corrected nav bar icons go here -->
     </nav>
     
-    <!-- SCRIPTS -->
+    <!-- SCRIPTS (Order is CRITICAL) -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     
     <script src="js/firebase-config.js"></script>
     
-    <!-- 
-        ==================================================================
-        THE FIX: We load the gatekeeper script FIRST.
-        It will decide whether the user can stay on this page.
-        ==================================================================
-    -->
+    <!-- 1. The Gatekeeper runs first -->
     <script src="js/auth-guard.js"></script>
 
-    <!-- These scripts will only be useful if the guard grants access -->
+    <!-- 2. These scripts run after the Gatekeeper grants access -->
     <script src="js/cart.js"></script>
     <script src="js/profile.js"></script>
 </body>

@@ -1,44 +1,93 @@
 // js/app.js
+
 document.addEventListener('DOMContentLoaded', () => {
+    // These functions run as soon as the page is loaded.
     loadPromoBanners();
     loadCategories();
     loadNewArrivals();
-    updateCartBadge(); // from cart.js
+    updateCartBadge(); // This function is in cart.js
 });
 
 function loadPromoBanners() {
     const bannerContainer = document.getElementById('promo-banners');
-    // In a real app, you'd fetch this from Firestore
-    // For now, let's hardcode one to match the design
-    bannerContainer.innerHTML = `
-        <div class="promo-card" style="background-image: linear-gradient(to right, #6ee7b7, #34d399);">
-            <div class="brand">Murad</div>
-            <div class="title">Retinol Youth Renewal</div>
-            <div class="desc">Helps fight the appearance of lines & deep wrinkles.</div>
-            <div class="buy-button">20% OFF | BUY NOW</div>
-        </div>
-        <div class="promo-card" style="background-image: linear-gradient(to right, #fca5a5, #ef4444);">
-            <div class="brand">The Ordinary</div>
-            <div class="title">Glycolic Acid 7%</div>
-            <div class="desc">Offers mild exfoliation for improved skin radiance.</div>
-            <div class="buy-button">10% OFF | BUY NOW</div>
-        </div>
-    `;
+    bannerContainer.innerHTML = ''; // Clear any default content
+
+    db.collection('settings').doc('banner').get().then(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            // Use the data from Firestore to build the banner
+            bannerContainer.innerHTML = `
+                <div class="promo-card" style="background-image: linear-gradient(to right, #6ee7b7, #34d399);">
+                    <div class="brand">Promotion</div>
+                    <div class="title">${data.title}</div>
+                    <div class="desc">${data.subtitle}</div>
+                </div>
+            `;
+        } else {
+            // If no banner is set in the admin panel, you can hide the section or show a default
+            console.log("No banner data found in Firestore.");
+            bannerContainer.style.display = 'none';
+        }
+    }).catch(error => {
+        console.error("Error getting banner:", error);
+    });
 }
 
 function loadCategories() {
-    // This function can remain the same, fetching from Firestore
+    const categoryTabs = document.getElementById('category-tabs');
+    categoryTabs.innerHTML = ''; // Clear any default content
+
+    db.collection('categories').get().then(querySnapshot => {
+        if (querySnapshot.empty) {
+            console.log("No categories found in Firestore.");
+            return;
+        }
+        // Add an "All" tab first, and make it active by default.
+        let tabsHtml = '<div class="category-tab active" data-id="all">All</div>';
+        querySnapshot.forEach(doc => {
+            tabsHtml += `<div class="category-tab" data-id="${doc.id}">${doc.data().name}</div>`;
+        });
+        categoryTabs.innerHTML = tabsHtml;
+
+        // Add event listeners to all tabs to handle filtering.
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                filterProductsByCategory(e.target.dataset.id);
+                // Update the 'active' class for styling
+                document.querySelector('.category-tab.active').classList.remove('active');
+                e.target.classList.add('active');
+            });
+        });
+    });
 }
 
 function loadNewArrivals() {
-    // This function can remain the same, fetching from Firestore
+    // This query specifically looks for products marked as "New Arrival" in the admin panel.
+    const query = db.collection('products').where('isNewArrival', '==', true);
+    loadProducts(query);
+}
+
+function filterProductsByCategory(categoryId) {
+    let query;
+    if (categoryId === 'all') {
+        // If "All" is clicked, fetch all products.
+        query = db.collection('products');
+    } else {
+        // Otherwise, fetch only products matching the category ID.
+        query = db.collection('products').where('category', '==', categoryId);
+    }
+    loadProducts(query);
 }
 
 function loadProducts(query) {
     const productGrid = document.getElementById('product-grid');
-    productGrid.innerHTML = 'Loading...';
-    // This should fetch from your 'products' collection in Firestore
+    productGrid.innerHTML = '<p>Loading products...</p>'; // Show a loading message
+
     query.get().then(querySnapshot => {
+        if (querySnapshot.empty) {
+            productGrid.innerHTML = '<p>No products found. Please check back later!</p>';
+            return;
+        }
         let productsHtml = '';
         querySnapshot.forEach(doc => {
             const product = doc.data();

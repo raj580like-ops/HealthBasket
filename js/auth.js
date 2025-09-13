@@ -1,29 +1,77 @@
 // js/auth.js
 
 document.addEventListener('DOMContentLoaded', () => {
+    // This primary listener updates the UI whenever the auth state changes.
+    auth.onAuthStateChanged(updateUserGreeting);
+
+    // Set up all necessary event listeners for the login modal and protected links.
+    setupAuthEventListeners();
+
+    // Check if the user is returning from an email sign-in link.
+    handleSignInLink();
+});
+
+/**
+ * Updates the "Welcome" message on the homepage based on login state.
+ * @param {firebase.User|null} user The user object from Firebase, or null.
+ */
+function updateUserGreeting(user) {
+    const greetingElement = document.getElementById('user-greeting');
+    if (!greetingElement) return; // Exit if the element isn't on the current page.
+
+    if (user) {
+        // User is logged in, so we fetch their name from our 'users' collection.
+        db.collection('users').doc(user.uid).get().then(doc => {
+            if (doc.exists) {
+                greetingElement.innerHTML = `<h2>Welcome back,</h2><h1>${doc.data().name}</h1>`;
+            } else {
+                // Fallback if the user document hasn't been created yet.
+                greetingElement.innerHTML = `<h2>Welcome,</h2><h1>Friend</h1>`;
+            }
+        });
+    } else {
+        // User is logged out.
+        greetingElement.innerHTML = `<h2>Welcome,</h2><h1>Guest</h1>`;
+    }
+}
+
+/**
+ * Sets up all click handlers related to authentication.
+ */
+function setupAuthEventListeners() {
     const loginModal = document.getElementById('login-modal');
     const closeButton = document.querySelector('.modal .close-button');
-    
-    // Check the user's authentication state when the page loads.
-    auth.onAuthStateChanged(user => {
-        updateUserGreeting(user); // Call our new, robust function.
-        if (user) {
-            loginModal.style.display = 'none'; // Close modal if user is logged in.
-        }
-    });
-
-    // --- Login Modal Logic ---
-    if (closeButton) {
-        closeButton.onclick = () => loginModal.style.display = 'none';
-    }
-    window.onclick = (event) => {
-        if (event.target == loginModal) {
-            loginModal.style.display = 'none';
-        }
-    };
-    
-    // --- Email Link Login Logic ---
     const sendEmailLinkBtn = document.getElementById('send-email-link-btn');
+    const profileLink = document.querySelector('a[href="profile.html"]');
+
+    // Logic to show the login modal
+    const showLoginModal = () => {
+        if (loginModal) loginModal.style.display = 'block';
+    };
+
+    // Logic to hide the login modal
+    const hideLoginModal = () => {
+        if (loginModal) loginModal.style.display = 'none';
+    };
+
+    // Make the profile icon link "smart"
+    if (profileLink) {
+        profileLink.addEventListener('click', (event) => {
+            event.preventDefault(); // Stop the link from navigating immediately.
+            if (auth.currentUser) {
+                // If user is already logged in, proceed to the profile page.
+                window.location.href = 'profile.html';
+            } else {
+                // If user is logged out, show the login modal instead.
+                showLoginModal();
+            }
+        });
+    }
+
+    // Modal close button
+    if (closeButton) closeButton.onclick = hideLoginModal;
+
+    // Send email link button
     if (sendEmailLinkBtn) {
         sendEmailLinkBtn.addEventListener('click', () => {
             const name = document.getElementById('login-name').value;
@@ -35,39 +83,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const actionCodeSettings = {
-                url: window.location.origin, // URL to redirect back to
+                url: window.location.origin, // Redirect back to the main page.
                 handleCodeInApp: true,
             };
 
             auth.sendSignInLinkToEmail(email, actionCodeSettings)
                 .then(() => {
-                    // Save email and name for when the user returns
+                    // Save the user's details in the browser so we can use them when they return.
                     window.localStorage.setItem('emailForSignIn', email);
                     if (name) {
                         window.localStorage.setItem('userNameForSignUp', name);
                     }
                     alert('A login link has been sent to your email.');
-                    loginModal.style.display = 'none';
+                    hideLoginModal();
                 })
-                .catch(error => {
-                    console.error("Error sending login link:", error);
-                    alert(error.message);
-                });
+                .catch(error => console.error("Error sending login link:", error));
         });
     }
+}
 
-    // --- Handle the returning user from the email link ---
+/**
+ * Checks if the current URL is a sign-in link and completes the process.
+ */
+function handleSignInLink() {
     if (auth.isSignInWithEmailLink(window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
         if (!email) {
             email = window.prompt('Please provide your email for confirmation');
         }
+
         auth.signInWithEmailLink(email, window.location.href)
             .then(result => {
-                // Clear the stored email
-                window.localStorage.removeItem('emailForSignIn');
+                // The user is now officially logged in.
                 
-                // If this is a new user, create their document in Firestore
+                // If this is the very first time they've logged in, create their user profile.
                 if (result.additionalUserInfo.isNewUser) {
                     const name = window.localStorage.getItem('userNameForSignUp');
                     if (name) {
@@ -75,47 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: name,
                             email: result.user.email,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        window.localStorage.removeItem('userNameForSignUp');
+                        }).catch(err => console.error("Error creating user document:", err));
                     }
                 }
+                
+                // Clean up the stored information.
+                window.localStorage.removeItem('emailForSignIn');
+                window.localStorage.removeItem('userNameForSignUp');
             })
             .catch(error => console.error("Error signing in with email link:", error));
-    }
-});
-
-/**
- * A robust function to update the user greeting on the homepage.
- * @param {object|null} user The user object from Firebase Auth, or null if logged out.
- */
-function updateUserGreeting(user) {
-    const greetingElement = document.getElementById('user-greeting');
-    if (!greetingElement) return; // Exit if the element doesn't exist on the page.
-
-    if (user) {
-        // 1. User is logged in, now fetch their name from Firestore.
-        db.collection('users').doc(user.uid).get().then(doc => {
-            if (doc.exists) {
-                const userName = doc.data().name;
-                // THIS IS THE FIX: We use the fetched name.
-                greetingElement.innerHTML = `
-                    <h2>Welcome back,</h2>
-                    <h1>${userName}</h1>
-                `;
-            } else {
-                // This can happen if the user document wasn't created properly.
-                // We'll use a fallback.
-                greetingElement.innerHTML = `
-                    <h2>Welcome,</h2>
-                    <h1>Friend</h1>
-                `;
-            }
-        });
-    } else {
-        // 2. User is logged out.
-        greetingElement.innerHTML = `
-            <h2>Welcome,</h2>
-            <h1>Guest</h1>
-        `;
     }
 }

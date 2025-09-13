@@ -1,43 +1,57 @@
 // js/auth-guard.js
 
 /**
- * This is the "Patient Gatekeeper". Its only job is to wait for Firebase
- * to determine the initial, stable login state, and then grant access or redirect.
- * It unsubscribes itself after the first check to prevent any conflicts.
+ * A Promise-based function that waits for Firebase to determine the initial,
+ * stable authentication state. It only resolves once.
+ * @returns {Promise<firebase.User|null>} A promise that resolves with the user object or null.
  */
-function authGuard() {
-    const contentElement = document.getElementById('protected-content');
-    const loadingElement = document.getElementById('loading-spinner');
-
-    // Show the loading spinner immediately and hide the page content.
-    if (loadingElement) loadingElement.style.display = 'flex';
-    if (contentElement) contentElement.style.display = 'none';
-
-    // ================================================================
-    // THE DEFINITIVE FIX IS HERE:
-    // We create a listener that automatically unsubscribes itself.
-    // This ensures it only runs ONCE, after Firebase has had time
-    // to check for a saved session in the browser's memory.
-    // ================================================================
-    const unsubscribe = auth.onAuthStateChanged(user => {
-        // Unsubscribe the listener immediately. We only care about the first result.
-        unsubscribe(); 
-
-        // Hide the spinner now that we have a definitive answer.
-        if (loadingElement) loadingElement.style.display = 'none';
-
-        if (user) {
-            // SUCCESS: A user session was found. Show the page.
-            console.log("Auth Guard: Access granted.");
-            if (contentElement) contentElement.style.display = 'block';
-        } else {
-            // FAILURE: No user session was found. Redirect to home.
-            console.log("Auth Guard: Access DENIED. Redirecting to home.");
-            // Use .replace() to prevent the user from clicking "back" to the broken page.
-            window.location.replace('index.html');
-        }
+function getCurrentUser() {
+    return new Promise((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            unsubscribe(); // Stop listening after we get the first, stable result.
+            resolve(user); // Resolve the promise with the user object (or null).
+        }, reject); // Reject the promise if there's an error.
     });
 }
 
-// Run the gatekeeper as soon as the DOM is ready.
-document.addEventListener('DOMContentLoaded', authGuard);
+/**
+ * This is the main "gatekeeper" function. It is now asynchronous.
+ * It will pause and wait for getCurrentUser() to finish before doing anything.
+ */
+async function authGuard() {
+    const contentElements = document.querySelectorAll('.requires-auth');
+    const loadingElement = document.getElementById('loading-spinner');
+
+    // Show loading spinner immediately
+    if (loadingElement) loadingElement.style.display = 'flex';
+    contentElements.forEach(el => el.style.display = 'none');
+
+    try {
+        // ================================================================
+        // THE DEFINITIVE FIX:
+        // We 'await' our promise. The code will NOT continue past this
+        // line until Firebase has a definitive answer about the login state.
+        // ================================================================
+        const user = await getCurrentUser();
+
+        // Hide the spinner now that we have our answer.
+        if (loadingElement) loadingElement.style.display = 'none';
+
+        if (user) {
+            // SUCCESS: A user was found. Show the protected content.
+            console.log("Auth Guard: Access GRANTED.");
+            contentElements.forEach(el => el.style.display = 'block'); // Use 'block' or 'flex' as needed
+        } else {
+            // FAILURE: No user was found. Redirect.
+            console.log("Auth Guard: Access DENIED. Redirecting to home.");
+            window.location.replace('index.html');
+        }
+    } catch (error) {
+        console.error("Authentication error in Auth Guard:", error);
+        // Handle potential errors during auth check
+        if (loadingElement) loadingElement.textContent = 'Error verifying access.';
+    }
+}
+
+// Run the gatekeeper.
+authGuard();

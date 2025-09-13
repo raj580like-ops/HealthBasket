@@ -1,29 +1,52 @@
 // js/profile.js
 
-// We can now assume the user is logged in because the auth-guard has already checked.
-const user = auth.currentUser;
+// This entire script runs under the assumption that auth-guard.js has already
+// verified that a user is logged in.
 
 document.addEventListener('DOMContentLoaded', () => {
+    const user = auth.currentUser;
+
     if (user) {
-        // If a user exists, load their data.
+        // If the user object exists, load all their data.
         loadUserProfile(user.uid);
         loadOrderHistory(user.uid);
-        updateCartBadge();
+        updateCartBadge(); // This function is in cart.js
     } else {
-        // This is a fallback, but the guard should prevent this from being seen.
-        console.error("Profile.js loaded, but no user was found. This shouldn't happen.");
+        // This is a safety net. The auth-guard should prevent this code from ever running.
+        console.error("CRITICAL ERROR: profile.js was loaded, but no user was found. The auth-guard may have failed.");
+        document.body.innerHTML = "<h1>Access Error</h1><p>Could not verify user session. Please try logging in again from the <a href='index.html'>homepage</a>.</p>";
     }
 
-    // Event listeners
-    document.getElementById('address-form').addEventListener('submit', handleAddressSave);
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        auth.signOut().then(() => {
-            console.log('User signed out');
-            window.location.href = 'index.html';
-        });
-    });
+    // Set up event listeners for the page's interactive elements.
+    setupProfileEventListeners();
 });
 
+/**
+ * Sets up all click handlers for the profile page.
+ */
+function setupProfileEventListeners() {
+    const addressForm = document.getElementById('address-form');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (addressForm) {
+        addressForm.addEventListener('submit', handleAddressSave);
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                // After signing out, Firebase's auth state will change, and the
+                // auth-guard on the next page load will handle redirection.
+                window.location.href = 'index.html';
+            });
+        });
+    }
+}
+
+/**
+ * Fetches user details from Firestore and populates the page.
+ * @param {string} uid The user's unique ID.
+ */
 function loadUserProfile(uid) {
     const userSection = document.getElementById('user-details-section');
     const addressForm = document.getElementById('address-form');
@@ -40,44 +63,28 @@ function loadUserProfile(uid) {
                 <p><strong>Email:</strong> ${userEmail}</p>
             `;
 
+            // Pre-fill the address form if the user has saved an address before.
             if (userData.shippingAddress) {
-                // Pre-fill form
+                addressForm.elements['address-name'].value = userData.shippingAddress.name || '';
+                addressForm.elements['address-line1'].value = userData.shippingAddress.line1 || '';
+                addressForm.elements['address-city'].value = userData.shippingAddress.city || '';
+                addressForm.elements['address-pincode'].value = userData.shippingAddress.pincode || '';
+                addressForm.elements['address-phone'].value = userData.shippingAddress.phone || '';
             }
         } else {
-            console.log("User document not found.");
+            console.warn("User document not found in Firestore for UID:", uid);
             userSection.innerHTML = `<h3>My Details</h3><p>Could not load user details.</p>`;
         }
     });
 }
 
-function handleAddressSave(event) {
-    event.preventDefault();
-    const user = auth.currentUser;
-    if (user) {
-        const address = {
-            name: document.getElementById('address-name').value,
-            line1: document.getElementById('address-line1').value,
-            city: document.getElementById('address-city').value,
-            pincode: document.getElementById('address-pincode').value,
-            phone: document.getElementById('address-phone').value,
-        };
-
-        db.collection('users').doc(user.uid).set({ 
-            shippingAddress: address 
-        }, { merge: true })
-        .then(() => alert('Address saved successfully!'))
-        .catch(error => console.error('Error saving address:', error));
-    }
-}
-
+/**
+ * Fetches a user's order history from Firestore.
+ * @param {string} uid The user's unique ID.
+ */
 function loadOrderHistory(uid) {
-    // This function remains the same as before.
     const ordersListDiv = document.getElementById('order-history-list');
-    db.collection('orders')
-      .where('userId', '==', uid)
-      .orderBy('createdAt', 'desc')
-      .get()
-      .then(querySnapshot => {
+    db.collection('orders').where('userId', '==', uid).orderBy('createdAt', 'desc').get().then(querySnapshot => {
         if (querySnapshot.empty) {
             ordersListDiv.innerHTML = '<p>You have no past orders.</p>';
             return;
@@ -99,4 +106,29 @@ function loadOrderHistory(uid) {
         });
         ordersListDiv.innerHTML = ordersHtml;
     });
+}
+
+/**
+ * Saves the shipping address to the user's document in Firestore.
+ * @param {Event} event The form submission event.
+ */
+function handleAddressSave(event) {
+    event.preventDefault();
+    const user = auth.currentUser;
+    if (user) {
+        const address = {
+            name: document.getElementById('address-name').value,
+            line1: document.getElementById('address-line1').value,
+            city: document.getElementById('address-city').value,
+            pincode: document.getElementById('address-pincode').value,
+            phone: document.getElementById('address-phone').value,
+        };
+
+        // .set with { merge: true } safely creates or updates the document field.
+        db.collection('users').doc(user.uid).set({
+            shippingAddress: address
+        }, { merge: true })
+        .then(() => alert('Address saved successfully!'))
+        .catch(error => console.error('Error saving address:', error));
+    }
 }

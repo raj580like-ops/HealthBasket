@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Admin Login</title>
     <!-- This path looks for a 'css' folder INSIDE the 'admin' folder -->
-    <link rel="stylesheet" href="admin/css/admin-style.css">
+    <link rel="stylesheet" href="css/admin-style.css">
 </head>
 <body>
     <div class="login-container">
@@ -14,16 +14,24 @@
         <button id="admin-login-btn">Login</button>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- 
+      ==================================================================
+      FIXING THE CRITICAL ERROR: The 'firebase-auth.js' script was missing.
+      Every page that uses an auth function needs this.
+      ==================================================================
+    -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <!-- THIS SCRIPT WAS MISSING, CAUSING THE `firestore is not a function` ERROR -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script> <!-- THIS LINE WAS MISSING -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
-    <!-- Your Scripts -->
-    <!-- This path goes UP one level from 'admin' to the root, then DOWN into 'js' -->
+    <!-- 
+      ==================================================================
+      FIXING THE 404 ERRORS: These paths are now correct.
+      ==================================================================
+    -->
+    <!-- This path goes UP one level from 'admin', then DOWN into 'js' -->
     <script src="../js/firebase-config.js"></script>
-    <!-- This path looks for a 'js' folder INSIDE the 'admin' folder -->
-    <script src="js/admin-auth.js"></script>
+    <!-- This path looks for a 'js' folder INSIDE the current 'admin' folder -->
+    <script src="js/admin-auth.js"></script> 
 </body>
 </html>

@@ -1,0 +1,17 @@
+/* admin/css/admin-style.css */
+body { font-family: sans-serif; background-color: #f4f4f4; }
+.login-container, .card {
+    background: white;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 500px;
+}
+input, select, button { width: 100%; padding: 10px; margin: 5px 0; }
+button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+header { background: #333; color: white; padding: 1rem; display: flex; justify-content: space-between; }
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+.card.wide { grid-column: 1 / -1; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }

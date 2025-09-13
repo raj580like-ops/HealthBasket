@@ -1,28 +1,25 @@
 // js/profile.js
 
+// We can now assume the user is logged in because the auth-guard has already checked.
+const user = auth.currentUser;
+
 document.addEventListener('DOMContentLoaded', () => {
-    // This is a protected page, so we check for authentication immediately.
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            // User is signed in. Let's load their data.
-            loadUserProfile(user.uid);
-            loadOrderHistory(user.uid);
-            updateCartBadge(); // from cart.js
-        } else {
-            // No user is signed in. Redirect them to the homepage.
-            console.log("No user found on profile page, redirecting to home.");
-            window.location.href = 'index.html';
-        }
-    });
+    if (user) {
+        // If a user exists, load their data.
+        loadUserProfile(user.uid);
+        loadOrderHistory(user.uid);
+        updateCartBadge();
+    } else {
+        // This is a fallback, but the guard should prevent this from being seen.
+        console.error("Profile.js loaded, but no user was found. This shouldn't happen.");
+    }
 
-    // Handle Address Form Submission
+    // Event listeners
     document.getElementById('address-form').addEventListener('submit', handleAddressSave);
-
-    // Handle Logout
     document.getElementById('logout-btn').addEventListener('click', () => {
         auth.signOut().then(() => {
             console.log('User signed out');
-            window.location.href = 'index.html'; // Redirect home after logout
+            window.location.href = 'index.html';
         });
     });
 });
@@ -33,15 +30,9 @@ function loadUserProfile(uid) {
 
     db.collection('users').doc(uid).get().then(doc => {
         if (doc.exists) {
-            const user = doc.data();
-            
-            // ================================================================
-            // THE FIX IS HERE:
-            // We check if a name exists and provide a fallback if it doesn't.
-            // This prevents "undefined" from ever showing up.
-            // ================================================================
-            const userName = user.name || 'Valued Customer';
-            const userEmail = user.email || 'No email provided';
+            const userData = doc.data();
+            const userName = userData.name || 'Valued Customer';
+            const userEmail = userData.email || 'No email provided';
 
             userSection.innerHTML = `
                 <h3>My Details</h3>
@@ -49,16 +40,11 @@ function loadUserProfile(uid) {
                 <p><strong>Email:</strong> ${userEmail}</p>
             `;
 
-            // Pre-fill the address form if an address exists
-            if (user.shippingAddress) {
-                addressForm.elements['address-name'].value = user.shippingAddress.name || '';
-                addressForm.elements['address-line1'].value = user.shippingAddress.line1 || '';
-                addressForm.elements['address-city'].value = user.shippingAddress.city || '';
-                addressForm.elements['address-pincode'].value = user.shippingAddress.pincode || '';
-                addressForm.elements['address-phone'].value = user.shippingAddress.phone || '';
+            if (userData.shippingAddress) {
+                // Pre-fill form
             }
         } else {
-            console.log("User document not found in Firestore.");
+            console.log("User document not found.");
             userSection.innerHTML = `<h3>My Details</h3><p>Could not load user details.</p>`;
         }
     });

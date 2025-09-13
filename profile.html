@@ -10,44 +10,38 @@
     </style>
 </head>
 <body>
-    <!-- This loading spinner is shown by default -->
     <div id="loading-spinner" class="loading-container">
-        <p>Verifying access...</p>
+        <p>Verifying Your Session...</p>
     </div>
 
-    <!-- The 'requires-auth' class tells our new gatekeeper to hide this until access is granted -->
-    <main class="container requires-auth" style="display: none;">
-        <header class="page-header">
-            <a href="index.html" class="back-arrow">&larr;</a>
-            <h1>My Profile</h1>
-        </header>
-        <!-- All your profile sections go here -->
-        <section class="profile-section" id="user-details-section"></section>
-        <section class="profile-section">
-            <h3>Shipping Address</h3>
-            <form id="address-form" class="address-form"><!-- form content --></form>
-        </section>
-        <section class="profile-section">
-            <h3>Order History</h3>
-            <div id="order-history-list" class="order-history-list"></div>
-        </section>
-        <button id="logout-btn" class="logout-button">Logout</button>
-    </main>
-
-    <!-- The nav bar also requires authentication to show the correct state -->
-    <nav class="bottom-nav requires-auth" style="display: none;">
-        <!-- Your corrected nav bar icons go here, with profile as active -->
-    </nav>
+    <div id="protected-content" style="display: none;">
+        <main class="container">
+            <header class="page-header">
+                <a href="index.html" class="back-arrow">&larr;</a>
+                <h1>My Profile</h1>
+            </header>
+            <section class="profile-section" id="user-details-section"></section>
+            <section class="profile-section">
+                <h3>Shipping Address</h3>
+                <form id="address-form" class="address-form"><!-- form content --></form>
+            </section>
+            <section class="profile-section">
+                <h3>Order History</h3>
+                <div id="order-history-list" class="order-history-list"></div>
+            </section>
+            <button id="logout-btn" class="logout-button">Logout</button>
+        </main>
+        <nav class="bottom-nav">
+            <!-- Your corrected nav bar icons go here, with profile active -->
+        </nav>
+    </div>
     
     <!-- SCRIPTS (Order is CRITICAL) -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script src="js/firebase-config.js"></script>
-    
-    <!-- 1. The Gatekeeper runs first -->
     <script src="js/auth-guard.js"></script>
-    <!-- 2. These scripts run after the Gatekeeper grants access -->
     <script src="js/cart.js"></script>
     <script src="js/profile.js"></script>
 </body>

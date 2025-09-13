@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Successful</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="text-align: center; padding-top: 50px;">
+    <div class="success-container">
+        <img src="images/success-checkmark.png" alt="Success" style="width: 100px;"> <!-- Add a checkmark image -->
+        <h1>Thank You!</h1>
+        <p>Your order has been placed successfully.</p>
+        <p id="order-id-display"></p>
+        <a href="index.html">Continue Shopping</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('orderId');
+            if (orderId) {
+                document.getElementById('order-id-display').textContent = `Your Order ID is: ${orderId}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -127,34 +127,4 @@ function loadOrders() {
 
 function updateOrderStatus(id, status) {
     db.collection('orders').doc(id).update({ status: status });
-}```
-
----
-
-### **Step 4: PWA Files**
-
-These files make your website installable and work offline.
-
-#### **`manifest.json`**
-
-```json
-{
-  "name": "ClinicStore - Your Digital Clinic",
-  "short_name": "ClinicStore",
-  "start_url": "/index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007bff",
-  "icons": [
-    {
-      "src": "images/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "images/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
 }

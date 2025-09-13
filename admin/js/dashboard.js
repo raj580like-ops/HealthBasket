@@ -1,4 +1,8 @@
 // admin/js/dashboard.js
+
+// IMPORTANT: Paste your ImgBB API Key here
+const IMGBB_API_KEY = 'e4ac63ce8f34d7f4b55b316d642b432d';
+
 document.addEventListener('DOMContentLoaded', () => {
     // Check if admin is logged in
     auth.onAuthStateChanged(user => {
@@ -15,64 +19,103 @@ document.addEventListener('DOMContentLoaded', () => {
     // Logout
     document.getElementById('admin-logout-btn').addEventListener('click', () => auth.signOut());
 
-    // Banner Management
-    const updateBannerBtn = document.getElementById('update-banner-btn');
-    updateBannerBtn.addEventListener('click', () => {
+    // --- Banner Management with ImgBB ---
+    document.getElementById('update-banner-btn').addEventListener('click', async () => {
         const title = document.getElementById('banner-title').value;
         const subtitle = document.getElementById('banner-subtitle').value;
         const imageFile = document.getElementById('banner-image').files[0];
-        
-        if (imageFile) {
-            const uploadTask = storage.ref(`banners/${imageFile.name}`).put(imageFile);
-            uploadTask.on('state_changed', 
-                (snapshot) => {}, 
-                (error) => console.error(error), 
-                () => {
-                    storage.ref('banners').child(imageFile.name).getDownloadURL().then(url => {
-                        db.collection('settings').doc('banner').set({ title, subtitle, imageUrl: url });
-                    });
-                }
-            );
-        } else {
-            db.collection('settings').doc('banner').update({ title, subtitle });
+
+        try {
+            if (imageFile) {
+                // 1. Upload image to ImgBB
+                const imageUrl = await uploadImageToImgBB(imageFile);
+                // 2. Save the URL from ImgBB to Firestore
+                await db.collection('settings').doc('banner').set({ title, subtitle, imageUrl: imageUrl });
+                alert('Banner updated successfully with new image!');
+            } else {
+                // If no new image, just update the text
+                await db.collection('settings').doc('banner').update({ title, subtitle });
+                alert('Banner text updated!');
+            }
+        } catch (error) {
+            console.error("Error updating banner:", error);
+            alert("Failed to update banner. Check the console for errors.");
         }
-        alert('Banner updated!');
     });
 
-    // Category Management
+    // --- Category Management (No change) ---
     document.getElementById('add-category-btn').addEventListener('click', () => {
         const name = document.getElementById('category-name').value;
         if (name) {
             db.collection('categories').add({ name }).then(() => {
                 loadCategoriesForDropdown();
                 loadCategoriesForList();
+                document.getElementById('category-name').value = ''; // Clear input
             });
         }
     });
 
-    // Product Management
-    document.getElementById('add-product-btn').addEventListener('click', () => {
+    // --- Product Management with ImgBB ---
+    document.getElementById('add-product-btn').addEventListener('click', async () => {
         const imageFile = document.getElementById('product-image').files[0];
-        if (!imageFile) { alert('Please upload a product image.'); return; }
+        if (!imageFile) {
+            alert('Please select a product image to upload.');
+            return;
+        }
 
-        const uploadTask = storage.ref(`products/${imageFile.name}`).put(imageFile);
-        uploadTask.on('state_changed', null, null, () => {
-            storage.ref('products').child(imageFile.name).getDownloadURL().then(url => {
-                const product = {
-                    name: document.getElementById('product-name').value,
-                    mrp: parseFloat(document.getElementById('product-mrp').value),
-                    sellingPrice: parseFloat(document.getElementById('product-sp').value),
-                    category: document.getElementById('product-category').value,
-                    badge: document.getElementById('product-badge').value,
-                    isNewArrival: document.getElementById('product-new-arrival').checked,
-                    imageUrl: url
-                };
-                db.collection('products').add(product).then(() => alert('Product added!'));
-            });
-        });
+        try {
+            // 1. Upload image to ImgBB
+            const imageUrl = await uploadImageToImgBB(imageFile);
+
+            // 2. Prepare product data with the URL from ImgBB
+            const product = {
+                name: document.getElementById('product-name').value,
+                mrp: parseFloat(document.getElementById('product-mrp').value),
+                sellingPrice: parseFloat(document.getElementById('product-sp').value),
+                category: document.getElementById('product-category').value,
+                badge: document.getElementById('product-badge').value,
+                isNewArrival: document.getElementById('product-new-arrival').checked,
+                imageUrl: imageUrl // Use the URL from ImgBB
+            };
+
+            // 3. Save the complete product data to Firestore
+            await db.collection('products').add(product);
+            alert('Product added successfully!');
+            // Optional: clear the form
+            document.getElementById('add-product-form').reset();
+
+        } catch (error) {
+            console.error("Error adding product:", error);
+            alert("Failed to add product. Check the console for errors.");
+        }
     });
 });
 
+/**
+ * A helper function to upload an image file to ImgBB and return the image URL.
+ * @param {File} imageFile The image file to upload.
+ * @returns {Promise<string>} A promise that resolves with the display URL of the uploaded image.
+ */
+async function uploadImageToImgBB(imageFile) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        return result.data.display_url;
+    } else {
+        throw new Error(result.error.message || 'Image upload failed.');
+    }
+}
+
+
+// --- Functions to load data into the dashboard (No changes needed here) ---
 function loadCategoriesForDropdown() {
     const select = document.getElementById('product-category');
     db.collection('categories').get().then(snapshot => {
@@ -94,23 +137,27 @@ function loadCategoriesForList() {
 }
 
 function deleteCategory(id) {
-    db.collection('categories').doc(id).delete().then(() => {
-        loadCategoriesForList();
-        loadCategoriesForDropdown();
-    });
+    if (confirm('Are you sure you want to delete this category?')) {
+        db.collection('categories').doc(id).delete().then(() => {
+            loadCategoriesForList();
+            loadCategoriesForDropdown();
+        });
+    }
 }
 
 function loadOrders() {
     const tbody = document.querySelector('#orders-table tbody');
-    db.collection('orders').onSnapshot(snapshot => {
+    db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
         tbody.innerHTML = '';
         snapshot.forEach(doc => {
             const order = doc.data();
+            const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : 'N/A';
             tbody.innerHTML += `
                 <tr>
-                    <td>${doc.id}</td>
+                    <td>${doc.id.substring(0, 8)}...</td>
                     <td>${order.userId.substring(0, 8)}...</td>
                     <td>₹${order.totalAmount}</td>
+                    <td>${orderDate}</td>
                     <td>${order.status}</td>
                     <td>
                         <select onchange="updateOrderStatus('${doc.id}', this.value)">

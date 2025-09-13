@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <button id="admin-logout-btn">Logout</button>
+    </header>
+    <main class="dashboard-grid">
+        <!-- Banner Management -->
+        <div class="card">
+            <h2>Banner Management</h2>
+            <input type="text" id="banner-title" placeholder="Title">
+            <input type="text" id="banner-subtitle" placeholder="Subtitle">
+            <input type="file" id="banner-image">
+            <button id="update-banner-btn">Update Banner</button>
+        </div>
+
+        <!-- Category Management -->
+        <div class="card">
+            <h2>Category Management</h2>
+            <input type="text" id="category-name" placeholder="New Category Name">
+            <button id="add-category-btn">Add Category</button>
+            <div id="category-list"></div>
+        </div>
+
+        <!-- Product Management -->
+        <div class="card wide">
+            <h2>Product Management</h2>
+            <input type="text" id="product-name" placeholder="Product Name">
+            <input type="number" id="product-mrp" placeholder="MRP">
+            <input type="number" id="product-sp" placeholder="Selling Price">
+            <select id="product-category"></select>
+            <input type="file" id="product-image">
+            <input type="text" id="product-badge" placeholder="Badge (e.g., Sale)">
+            <label><input type="checkbox" id="product-new-arrival"> New Arrival</label>
+            <button id="add-product-btn">Add Product</button>
+        </div>
+
+        <!-- Order Management -->
+        <div class="card wide">
+            <h2>Order Management</h2>
+            <table id="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

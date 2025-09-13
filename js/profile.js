@@ -1,89 +1,91 @@
 // js/profile.js
 
 document.addEventListener('DOMContentLoaded', () => {
+    // This script runs only after auth-guard.js has granted access.
     const user = auth.currentUser;
     if (user) {
-        // Use onSnapshot to listen for REAL-TIME updates to the user's profile.
-        // This is more advanced and ensures the page always shows the latest data.
+        // Use onSnapshot for real-time updates. If the user's data changes,
+        // the page will re-render automatically.
         db.collection('users').doc(user.uid).onSnapshot(doc => {
             if (doc.exists) {
                 renderProfilePage(doc.data());
             } else {
-                console.error("User document not found, but user is logged in. This is a critical error.");
+                console.error("CRITICAL: User is logged in, but their Firestore document is missing!");
             }
         });
-        
         loadOrderHistory(user.uid);
         updateCartBadge();
     }
     
     document.getElementById('profile-form').addEventListener('submit', handleProfileSave);
-    document.getElementById('logout-btn').addEventListener('click', () => auth.signOut().then(() => window.location.href = 'index.html'));
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        auth.signOut().then(() => window.location.href = 'index.html');
+    });
 });
 
 /**
- * This is the main function for displaying the profile page.
- * It decides whether to show the form or the saved details.
+ * The main rendering function. It decides whether to show the saved details or the edit form.
  * @param {object} userData The user's data from Firestore.
  */
 function renderProfilePage(userData) {
-    const formContainer = document.getElementById('profile-form-container');
-    const detailsContainer = document.getElementById('profile-details-container');
+    const detailsView = document.getElementById('profile-details-view');
+    const formView = document.getElementById('profile-form-view');
     
-    // Check if the essential address details have been filled out.
-    const isProfileComplete = userData.phone && userData.shippingAddress && userData.shippingAddress.village;
+    // Define "complete" as having a phone number and a village.
+    const isProfileComplete = userData.phone && userData.shippingAddress?.village;
 
     if (isProfileComplete) {
-        // --- PROFILE IS COMPLETE: Show the details view ---
-        formContainer.style.display = 'none';
-        detailsContainer.style.display = 'block';
+        // --- PROFILE IS COMPLETE: Show the read-only details ---
+        detailsView.style.display = 'block';
+        formView.style.display = 'none';
 
-        const address = userData.shippingAddress;
-        detailsContainer.innerHTML = `
-            <p><strong>Name:</strong> ${userData.name || 'N/A'}</p>
-            <p><strong>Email:</strong> ${userData.email || 'N/A'}</p>
-            <p><strong>Phone:</strong> ${userData.phone || 'N/A'}</p>
-            <p><strong>Address:</strong> ${address.village || ''}, ${address.postOffice || ''}, ${address.district || ''}, ${address.state || ''} - ${address.pincode || ''}</p>
-            <p><strong>Landmark:</strong> ${address.landmark || 'N/A'}</p>
+        const addr = userData.shippingAddress;
+        detailsView.innerHTML = `
+            <div class="profile-details">
+                <p><strong>Name:</strong> ${userData.name || 'N/A'}</p>
+                <p><strong>Email:</strong> ${userData.email || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${userData.phone || 'N/A'}</p>
+                <p><strong>Address:</strong> ${addr.village || ''}, ${addr.postOffice || ''}, ${addr.district || ''}, ${addr.state || ''} - ${addr.pincode || ''}</p>
+                <p><strong>Landmark:</strong> ${addr.landmark || 'N/A'}</p>
+            </div>
             <button id="edit-profile-btn" class="edit-btn">Edit Details</button>
         `;
 
-        // Add a click listener to the new "Edit" button
+        // IMPORTANT: Add an event listener to the newly created "Edit" button.
         document.getElementById('edit-profile-btn').addEventListener('click', () => {
-            populateProfileForm(userData); // Pre-fill the form
-            formContainer.style.display = 'block';
-            detailsContainer.style.display = 'none';
+            populateProfileForm(userData); // Fill the form with current data
+            detailsView.style.display = 'none';
+            formView.style.display = 'block'; // Show the form
         });
-
     } else {
-        // --- PROFILE IS INCOMPLETE: Show the form view ---
-        formContainer.style.display = 'block';
-        detailsContainer.style.display = 'none';
-        populateProfileForm(userData); // Pre-fill with any data that does exist
+        // --- PROFILE IS INCOMPLETE: Show the form to be filled out ---
+        detailsView.style.display = 'none';
+        formView.style.display = 'block';
+        populateProfileForm(userData);
     }
 }
 
 /**
- * A helper function to populate the form fields with user data.
- * @param {object} userData The user's data from Firestore.
+ * A helper function to fill the form fields with data from Firestore.
+ * @param {object} userData The user's data.
  */
 function populateProfileForm(userData) {
-    const profileForm = document.getElementById('profile-form');
-    const address = userData.shippingAddress || {}; // Use empty object as fallback
+    const form = document.getElementById('profile-form');
+    const addr = userData.shippingAddress || {}; // Use empty object as a safe fallback
 
-    profileForm.elements['profile-name'].value = userData.name || '';
-    profileForm.elements['profile-email'].value = userData.email || '';
-    profileForm.elements['profile-number'].value = userData.phone || '';
-    profileForm.elements['profile-vill'].value = address.village || '';
-    profileForm.elements['profile-post'].value = address.postOffice || '';
-    profileForm.elements['profile-dist'].value = address.district || '';
-    profileForm.elements['profile-pin'].value = address.pincode || '';
-    profileForm.elements['profile-state'].value = address.state || '';
-    profileForm.elements['profile-landmark'].value = address.landmark || '';
+    form.elements['profile-name'].value = userData.name || '';
+    form.elements['profile-email'].value = userData.email || '';
+    form.elements['profile-number'].value = userData.phone || '';
+    form.elements['profile-vill'].value = addr.village || '';
+    form.elements['profile-post'].value = addr.postOffice || '';
+    form.elements['profile-dist'].value = addr.district || '';
+    form.elements['profile-pin'].value = addr.pincode || '';
+    form.elements['profile-state'].value = addr.state || '';
+    form.elements['profile-landmark'].value = addr.landmark || '';
 }
 
 /**
- * Saves the complete profile and address to Firestore.
+ * Saves all profile form data to Firestore.
  */
 function handleProfileSave(event) {
     event.preventDefault();
@@ -102,16 +104,16 @@ function handleProfileSave(event) {
             }
         };
 
-        // Use .set with { merge: true } to safely update the user document.
-        // This will add or overwrite fields without destroying the whole document.
+        // .set with { merge: true } safely updates the user document.
         db.collection('users').doc(user.uid).set(profileData, { merge: true })
             .then(() => {
                 alert('Profile saved successfully!');
-                // The onSnapshot listener will automatically re-render the page to show the details view.
+                // The onSnapshot listener will automatically switch back to the details view.
             })
             .catch(error => console.error('Error saving profile:', error));
     }
 }
+
 function loadOrderHistory(uid) {
     const ordersListDiv = document.getElementById('order-history-list');
     db.collection('orders').where('userId', '==', uid).orderBy('createdAt', 'desc').get().then(querySnapshot => {

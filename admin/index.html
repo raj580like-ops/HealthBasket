@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Login</title>
-    <!-- This path correctly looks for css/admin-style.css INSIDE the admin folder -->
-    <link rel="stylesheet" href="admin/css/admin-style.css">
+    <!-- Path: Looks for css/admin-style.css inside the admin folder -->
+    <link rel="stylesheet" href="css/admin-style.css">
 </head>
 <body>
     <div class="login-container">
@@ -12,6 +12,7 @@
         <input type="email" id="admin-email" placeholder="Email">
         <input type="password" id="admin-password" placeholder="Password">
         <button id="admin-login-btn">Login</button>
+        <p id="admin-error-message" class="error-message"></p>
     </div>
 
     <!-- All necessary Firebase SDKs -->
@@ -21,6 +22,7 @@
 
     <!-- Correct paths to your project's JS files -->
     <script src="../js/firebase-config.js"></script>
+    <!-- THIS PATH IS NOW CORRECT. It looks for a 'js' folder inside the 'admin' folder. -->
     <script src="js/admin-auth.js"></script>
 </body>
 </html>

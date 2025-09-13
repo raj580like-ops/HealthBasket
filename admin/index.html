@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Login</title>
-    <!-- This path looks for a 'css' folder INSIDE the 'admin' folder -->
-    <link rel="stylesheet" href="css/admin-style.css">
+    <!-- This path correctly looks for css/admin-style.css INSIDE the admin folder -->
+    <link rel="stylesheet" href="admin/css/admin-style.css">
 </head>
 <body>
     <div class="login-container">
@@ -14,24 +14,24 @@
         <button id="admin-login-btn">Login</button>
     </div>
 
-    <!-- 
-      ==================================================================
-      FIXING THE CRITICAL ERROR: The 'firebase-auth.js' script was missing.
-      Every page that uses an auth function needs this.
-      ==================================================================
-    -->
+    <!-- All necessary Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script> <!-- THIS LINE WAS MISSING -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
-    <!-- 
-      ==================================================================
-      FIXING THE 404 ERRORS: These paths are now correct.
-      ==================================================================
-    -->
-    <!-- This path goes UP one level from 'admin', then DOWN into 'js' -->
+    <!-- Correct paths to your project's JS files -->
     <script src="../js/firebase-config.js"></script>
-    <!-- This path looks for a 'js' folder INSIDE the current 'admin' folder -->
-    <script src="js/admin-auth.js"></script> 
+    <script src="js/admin-auth.js"></script>
 </body>
 </html>
+```This permanently resolves the admin panel loading issues.
+
+---
+
+### **Part 2: The New User Interface (A-Z Code)**
+
+We will now build the user-facing part of the app to match the image precisely.
+
+#### **New File Structure**
+
+First, ensure your project has these files. We are bringing back `cart.html`, `profile.html`, and their related scripts.

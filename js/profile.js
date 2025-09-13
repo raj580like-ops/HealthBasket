@@ -7,42 +7,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // User is signed in. Let's load their data.
             loadUserProfile(user.uid);
             loadOrderHistory(user.uid);
-            updateCartBadge();
+            updateCartBadge(); // from cart.js
         } else {
             // No user is signed in. Redirect them to the homepage.
-            // In a real app, you might show a message first.
-            console.log("No user found, redirecting to home.");
+            console.log("No user found on profile page, redirecting to home.");
             window.location.href = 'index.html';
         }
     });
 
     // Handle Address Form Submission
-    document.getElementById('address-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (user) {
-            const address = {
-                name: document.getElementById('address-name').value,
-                line1: document.getElementById('address-line1').value,
-                city: document.getElementById('address-city').value,
-                pincode: document.getElementById('address-pincode').value,
-                phone: document.getElementById('address-phone').value,
-            };
-
-            // Use .set with { merge: true } to create or update the address
-            db.collection('users').doc(user.uid).set({ 
-                shippingAddress: address 
-            }, { merge: true })
-            .then(() => alert('Address saved successfully!'))
-            .catch(error => console.error('Error saving address:', error));
-        }
-    });
+    document.getElementById('address-form').addEventListener('submit', handleAddressSave);
 
     // Handle Logout
     document.getElementById('logout-btn').addEventListener('click', () => {
         auth.signOut().then(() => {
             console.log('User signed out');
-            window.location.href = 'index.html';
+            window.location.href = 'index.html'; // Redirect home after logout
         });
     });
 });
@@ -54,11 +34,19 @@ function loadUserProfile(uid) {
     db.collection('users').doc(uid).get().then(doc => {
         if (doc.exists) {
             const user = doc.data();
-            // Display user's name and email
+            
+            // ================================================================
+            // THE FIX IS HERE:
+            // We check if a name exists and provide a fallback if it doesn't.
+            // This prevents "undefined" from ever showing up.
+            // ================================================================
+            const userName = user.name || 'Valued Customer';
+            const userEmail = user.email || 'No email provided';
+
             userSection.innerHTML = `
                 <h3>My Details</h3>
-                <p><strong>Name:</strong> ${user.name}</p>
-                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Name:</strong> ${userName}</p>
+                <p><strong>Email:</strong> ${userEmail}</p>
             `;
 
             // Pre-fill the address form if an address exists
@@ -69,11 +57,35 @@ function loadUserProfile(uid) {
                 addressForm.elements['address-pincode'].value = user.shippingAddress.pincode || '';
                 addressForm.elements['address-phone'].value = user.shippingAddress.phone || '';
             }
+        } else {
+            console.log("User document not found in Firestore.");
+            userSection.innerHTML = `<h3>My Details</h3><p>Could not load user details.</p>`;
         }
     });
 }
 
+function handleAddressSave(event) {
+    event.preventDefault();
+    const user = auth.currentUser;
+    if (user) {
+        const address = {
+            name: document.getElementById('address-name').value,
+            line1: document.getElementById('address-line1').value,
+            city: document.getElementById('address-city').value,
+            pincode: document.getElementById('address-pincode').value,
+            phone: document.getElementById('address-phone').value,
+        };
+
+        db.collection('users').doc(user.uid).set({ 
+            shippingAddress: address 
+        }, { merge: true })
+        .then(() => alert('Address saved successfully!'))
+        .catch(error => console.error('Error saving address:', error));
+    }
+}
+
 function loadOrderHistory(uid) {
+    // This function remains the same as before.
     const ordersListDiv = document.getElementById('order-history-list');
     db.collection('orders')
       .where('userId', '==', uid)

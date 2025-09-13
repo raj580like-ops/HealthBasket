@@ -2,56 +2,51 @@
 
 /**
  * A Promise-based function that waits for Firebase to determine the initial,
- * stable authentication state. It only resolves once.
+ * stable authentication state after checking persistent storage.
  * @returns {Promise<firebase.User|null>} A promise that resolves with the user object or null.
  */
-function getCurrentUser() {
+function getInitialAuthState() {
     return new Promise((resolve, reject) => {
         const unsubscribe = auth.onAuthStateChanged(user => {
-            unsubscribe(); // Stop listening after we get the first, stable result.
-            resolve(user); // Resolve the promise with the user object (or null).
-        }, reject); // Reject the promise if there's an error.
+            unsubscribe(); // Stop listening after the first, definitive result.
+            resolve(user);
+        }, reject);
     });
 }
 
 /**
- * This is the main "gatekeeper" function. It is now asynchronous.
- * It will pause and wait for getCurrentUser() to finish before doing anything.
+ * The main async gatekeeper function. It will pause execution until the promise resolves.
  */
 async function authGuard() {
-    const contentElements = document.querySelectorAll('.requires-auth');
-    const loadingElement = document.getElementById('loading-spinner');
+    const content = document.getElementById('protected-content');
+    const spinner = document.getElementById('loading-spinner');
 
-    // Show loading spinner immediately
-    if (loadingElement) loadingElement.style.display = 'flex';
-    contentElements.forEach(el => el.style.display = 'none');
+    if (!content || !spinner) {
+        console.error("Auth Guard Error: Missing #protected-content or #loading-spinner element.");
+        return;
+    }
+
+    spinner.style.display = 'flex';
+    content.style.display = 'none';
 
     try {
-        // ================================================================
-        // THE DEFINITIVE FIX:
-        // We 'await' our promise. The code will NOT continue past this
-        // line until Firebase has a definitive answer about the login state.
-        // ================================================================
-        const user = await getCurrentUser();
+        console.log("Auth Guard: Awaiting initial auth state...");
+        const user = await getInitialAuthState();
 
-        // Hide the spinner now that we have our answer.
-        if (loadingElement) loadingElement.style.display = 'none';
+        spinner.style.display = 'none';
 
         if (user) {
-            // SUCCESS: A user was found. Show the protected content.
-            console.log("Auth Guard: Access GRANTED.");
-            contentElements.forEach(el => el.style.display = 'block'); // Use 'block' or 'flex' as needed
+            console.log("Auth Guard: Access GRANTED. User:", user.uid);
+            content.style.display = 'block';
         } else {
-            // FAILURE: No user was found. Redirect.
-            console.log("Auth Guard: Access DENIED. Redirecting to home.");
+            console.log("Auth Guard: Access DENIED. No user session found. Redirecting...");
             window.location.replace('index.html');
         }
     } catch (error) {
-        console.error("Authentication error in Auth Guard:", error);
-        // Handle potential errors during auth check
-        if (loadingElement) loadingElement.textContent = 'Error verifying access.';
+        console.error("Auth Guard failed:", error);
+        spinner.innerHTML = `<p>Error verifying access.</p>`;
     }
 }
 
-// Run the gatekeeper.
+// Run the gatekeeper immediately.
 authGuard();

@@ -31,14 +31,23 @@
         <!-- Product Management -->
         <div class="card wide">
             <h2>Product Management</h2>
-            <input type="text" id="product-name" placeholder="Product Name">
-            <input type="number" id="product-mrp" placeholder="MRP">
-            <input type="number" id="product-sp" placeholder="Selling Price">
-            <select id="product-category"></select>
-            <input type="file" id="product-image">
-            <input type="text" id="product-badge" placeholder="Badge (e.g., Sale)">
-            <label><input type="checkbox" id="product-new-arrival"> New Arrival</label>
-            <button id="add-product-btn">Add Product</button>
+            <!-- 
+                ==================================================================
+                THE FIX for the '.reset()' error:
+                We are wrapping all the inputs and the button in a <form> tag
+                with the ID that the JavaScript is looking for.
+                ==================================================================
+            -->
+            <form id="add-product-form">
+                <input type="text" id="product-name" placeholder="Product Name" required>
+                <input type="number" id="product-mrp" placeholder="MRP" required>
+                <input type="number" id="product-sp" placeholder="Selling Price" required>
+                <select id="product-category" required></select>
+                <input type="file" id="product-image" required>
+                <input type="text" id="product-badge" placeholder="Badge (e.g., Limited Edition)">
+                <label><input type="checkbox" id="product-new-arrival"> New Arrival</label>
+                <button id="add-product-btn" type="submit">Add Product</button>
+            </form>
         </div>
 
         <!-- Order Management -->
@@ -59,25 +68,20 @@
         </div>
     </main>
     
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
-    <script src="../js/firebase-config.js"></script>
-    <script src="js/dashboard.js"></script>
-</body>
-</html>
-    <!-- ... (rest of your dashboard.html) -->
-    </main>
-    
+    <!-- 
+        ==================================================================
+        THE FIX for the 'already been declared' errors:
+        All scripts are now included ONLY ONCE at the end of the body.
+        ==================================================================
+    -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     
-    <!-- ADD THIS LINE FOR STORAGE -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script> 
-    
+    <!-- This path goes UP from 'admin' and DOWN into the main 'js' folder -->
     <script src="../js/firebase-config.js"></script>
+    
+    <!-- This path goes into the 'js' folder inside the CURRENT 'admin' folder -->
     <script src="js/dashboard.js"></script>
 </body>
 </html>

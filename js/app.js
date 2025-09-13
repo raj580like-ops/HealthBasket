@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartBadge(); // This function is in cart.js
 });
 
+// In your js/app.js file, find the loadPromoBanners function and replace it with this one.
+
 function loadPromoBanners() {
     const bannerContainer = document.getElementById('promo-banners');
     bannerContainer.innerHTML = ''; // Clear any default content
@@ -15,16 +17,28 @@ function loadPromoBanners() {
     db.collection('settings').doc('banner').get().then(doc => {
         if (doc.exists) {
             const data = doc.data();
-            // Use the data from Firestore to build the banner
+
+            // ================================================================
+            // THE FIX IS HERE:
+            // We create a style string that includes BOTH a semi-transparent
+            // color overlay AND the imageUrl from Firestore.
+            // This ensures the text is always readable over the image.
+            // ================================================================
+            const bannerStyle = `
+                background-image: 
+                    linear-gradient(to right, rgba(16, 185, 129, 0.8), rgba(16, 185, 129, 0.6)), 
+                    url('${data.imageUrl}');
+            `;
+
             bannerContainer.innerHTML = `
-                <div class="promo-card" style="background-image: linear-gradient(to right, #6ee7b7, #34d399);">
+                <div class="promo-card" style="${bannerStyle}">
                     <div class="brand">Promotion</div>
                     <div class="title">${data.title}</div>
                     <div class="desc">${data.subtitle}</div>
                 </div>
+                <!-- You can add more static or dynamic banners here if needed -->
             `;
         } else {
-            // If no banner is set in the admin panel, you can hide the section or show a default
             console.log("No banner data found in Firestore.");
             bannerContainer.style.display = 'none';
         }

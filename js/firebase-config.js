@@ -10,8 +10,7 @@ const firebaseConfig = {
   appId: "1:820149827368:web:05e08a6b463a12bb73421d"
 };
 
-
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const auth = firebase.auth();
+const auth = firebase.auth(); // We need auth for the new UI and Admin

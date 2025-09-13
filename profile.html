@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .loading-container { display: flex; justify-content: center; align-items: center; height: 80vh; }
-    </style>
+    <style> .loading-container { display: flex; justify-content: center; align-items: center; height: 80vh; } </style>
 </head>
 <body>
-    <div id="loading-spinner" class="loading-container">
-        <p>Verifying Your Session...</p>
-    </div>
+    <div id="loading-spinner" class="loading-container"><p>Verifying Your Session...</p></div>
 
     <div id="protected-content" style="display: none;">
         <main class="container">
@@ -20,23 +16,60 @@
                 <a href="index.html" class="back-arrow">&larr;</a>
                 <h1>My Profile</h1>
             </header>
-            <section class="profile-section" id="user-details-section"></section>
+
             <section class="profile-section">
-                <h3>Shipping Address</h3>
-                <form id="address-form" class="address-form"><!-- form content --></form>
+                <h3>My Details & Shipping Address</h3>
+                <form id="profile-form" class="address-form">
+                    <input type="text" id="profile-name" placeholder="Full Name" required>
+                    <input type="email" id="profile-email" placeholder="Email Address" disabled> <!-- Email is not editable -->
+                    <input type="tel" id="profile-number" placeholder="Phone Number" required>
+                    <input type="text" id="profile-vill" placeholder="Village / House No." required>
+                    <input type="text" id="profile-post" placeholder="Post Office" required>
+                    <input type="text" id="profile-dist" placeholder="District" required>
+                    <input type="text" id="profile-pin" placeholder="Pincode" required>
+                    <input type="text" id="profile-state" placeholder="State" required>
+                    <input type="text" id="profile-landmark" placeholder="Nearest Landmark">
+                    <button type="submit">Save Profile & Address</button>
+                </form>
             </section>
+
             <section class="profile-section">
                 <h3>Order History</h3>
                 <div id="order-history-list" class="order-history-list"></div>
             </section>
+            
             <button id="logout-btn" class="logout-button">Logout</button>
         </main>
-        <nav class="bottom-nav">
-            <!-- Your corrected nav bar icons go here, with profile active -->
-        </nav>
+        <nav class="bottom-nav"><nav class="bottom-nav">
+    <!-- 
+        ==================================================================
+        THE FIX IS HERE:
+        We are replacing the messy icons with clear, standard ones.
+        ==================================================================
+    -->
+    <!-- Icon 1: Home (A simple house icon) -->
+    <a href="index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8h5z"/></svg>
+    </a>
+    
+    <!-- Icon 2: Categories (A grid icon) -->
+    <a href="#" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 11h8V3H3v8zm0 10h8v-8H3v8zm10 0h8v-8h-8v8zm0-18v8h8V3h-8z"/></svg>
+    </a>
+    
+    <!-- Icon 3: Cart (This one is already good) -->
+    <a href="cart.html" class="nav-item">
+        <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2s-.9-2-2-2zM1 2v2h2l3.6 7.59l-1.35 2.45c-.16.28-.25.61-.25.96c0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12l.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2s2-.9 2-2s-.9-2-2-2z"/></svg>
+    </a>
+    
+    <!-- Icon 4: Profile (This one is also good) -->
+    <a href="profile.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4s-4 1.79-4 4s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </a></nav>
     </div>
     
-    <!-- SCRIPTS (Order is CRITICAL) -->
+    <!-- SCRIPTS -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>

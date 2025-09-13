@@ -1,11 +1,10 @@
-html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Admin Login</title>
-    <!-- This path assumes admin-style.css is in admin/css/ -->
-    <link rel="stylesheet" href="css/admin-style.css">
+    <!-- This path looks for a 'css' folder INSIDE the 'admin' folder -->
+    <link rel="stylesheet" href="admin/css/admin-style.css">
 </head>
 <body>
     <div class="login-container">
@@ -13,19 +12,18 @@ html
         <input type="email" id="admin-email" placeholder="Email">
         <input type="password" id="admin-password" placeholder="Password">
         <button id="admin-login-btn">Login</button>
-        <p id="error-message" style="color: red;"></p>
     </div>
 
-    <!-- Firebase SDKs - CORE, AUTH, and the MISSING FIRESTORE -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <!-- THIS SCRIPT WAS MISSING, CAUSING THE `firestore is not a function` ERROR -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
-    <!-- Your project's scripts -->
-    <!-- This path correctly goes UP one level to the root, then into the main js folder -->
+    <!-- Your Scripts -->
+    <!-- This path goes UP one level from 'admin' to the root, then DOWN into 'js' -->
     <script src="../js/firebase-config.js"></script>
-    
-    <!-- This path correctly looks inside the admin/js/ folder -->
+    <!-- This path looks for a 'js' folder INSIDE the 'admin' folder -->
     <script src="js/admin-auth.js"></script>
 </body>
 </html>

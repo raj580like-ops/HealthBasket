@@ -17,21 +17,31 @@
                 <h1>My Profile</h1>
             </header>
 
-            <section class="profile-section">
-                <h3>My Details & Shipping Address</h3>
-                <form id="profile-form" class="address-form">
-                    <input type="text" id="profile-name" placeholder="Full Name" required>
-                    <input type="email" id="profile-email" placeholder="Email Address" disabled> <!-- Email is not editable -->
-                    <input type="tel" id="profile-number" placeholder="Phone Number" required>
-                    <input type="text" id="profile-vill" placeholder="Village / House No." required>
-                    <input type="text" id="profile-post" placeholder="Post Office" required>
-                    <input type="text" id="profile-dist" placeholder="District" required>
-                    <input type="text" id="profile-pin" placeholder="Pincode" required>
-                    <input type="text" id="profile-state" placeholder="State" required>
-                    <input type="text" id="profile-landmark" placeholder="Nearest Landmark">
-                    <button type="submit">Save Profile & Address</button>
-                </form>
-            </section>
+           <!-- This single section will contain both the details view and the form view -->
+<section class="profile-section">
+    <h3>My Details & Shipping Address</h3>
+    
+    <!-- This container will be shown when details are already saved -->
+    <div id="profile-details-container" style="display: none;">
+        <!-- profile.js will render the saved details here -->
+    </div>
+
+    <!-- This container holds the form, shown when details are incomplete or being edited -->
+    <div id="profile-form-container">
+        <form id="profile-form" class="address-form">
+            <input type="text" id="profile-name" placeholder="Full Name" required>
+            <input type="email" id="profile-email" placeholder="Email Address" disabled>
+            <input type="tel" id="profile-number" placeholder="Phone Number" required>
+            <input type="text" id="profile-vill" placeholder="Village / House No." required>
+            <input type="text" id="profile-post" placeholder="Post Office" required>
+            <input type="text" id="profile-dist" placeholder="District" required>
+            <input type="text" id="profile-pin" placeholder="Pincode" required>
+            <input type="text" id="profile-state" placeholder="State" required>
+            <input type="text" id="profile-landmark" placeholder="Nearest Landmark">
+            <button type="submit">Save Details</button>
+        </form>
+    </div>
+</section>
 
             <section class="profile-section">
                 <h3>Order History</h3>

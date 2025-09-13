@@ -7,18 +7,23 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <h1 class="logo">My Profile</h1>
-        </div>
-    </header>
 
-    <main class="profile-container">
-        <div id="user-info"></div>
-        
-        <div class="address-section">
+    <main class="container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <a href="index.html" class="back-arrow">&larr;</a>
+            <h1>My Profile</h1>
+        </header>
+
+        <!-- User Details Section -->
+        <section class="profile-section" id="user-details-section">
+            <!-- User info will be loaded here by profile.js -->
+        </section>
+
+        <!-- Shipping Address Section -->
+        <section class="profile-section">
             <h3>Shipping Address</h3>
-            <form id="address-form">
+            <form id="address-form" class="address-form">
                 <input type="text" id="address-name" placeholder="Full Name" required>
                 <input type="text" id="address-line1" placeholder="Address Line 1" required>
                 <input type="text" id="address-city" placeholder="City" required>
@@ -26,22 +31,43 @@
                 <input type="tel" id="address-phone" placeholder="Phone Number" required>
                 <button type="submit">Save Address</button>
             </form>
-        </div>
+        </section>
 
-        <div class="order-history">
+        <!-- Order History Section -->
+        <section class="profile-section">
             <h3>Order History</h3>
-            <div id="orders-list"></div>
-        </div>
-        
-        <button id="logout-btn">Logout</button>
+            <div id="order-history-list" class="order-history-list">
+                <!-- Orders will be loaded here by profile.js -->
+            </div>
+        </section>
+
+        <button id="logout-btn" class="logout-button">Logout</button>
+
     </main>
 
-    <!-- Firebase SDKs -->
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4 13h6v-2H4v2zm0 4h6v-2H4v2zm0-8h6V7H4v2zm10 0v2h6V7h-6zm0 8h6v-2h-6v2zm0-4h6v-2h-6v2z"/></svg>
+        </a>
+        <a href="#" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h12v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+        </a>
+        <a href="cart.html" class="nav-item">
+            <span id="cart-badge" class="cart-badge">0</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2s-.9-2-2-2zM1 2v2h2l3.6 7.59l-1.35 2.45c-.16.28-.25.61-.25.96c0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12l.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2s2-.9 2-2s-.9-2-2-2z"/></svg>
+        </a>
+        <a href="profile.html" class="nav-item active"> <!-- Set as active -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4s-4 1.79-4 4s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </a>
+    </nav>
+    
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-    
     <script src="js/firebase-config.js"></script>
+    <script src="js/cart.js"></script> <!-- Needed for the badge -->
     <script src="js/profile.js"></script>
 </body>
 </html>

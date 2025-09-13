@@ -6,13 +6,14 @@
     <title>Your Digital Clinic</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/images/icon-192.png">
 </head>
 <body>
 
-    <header>
+    <header class="site-header">
         <div class="header-content">
             <h1 class="logo">ClinicStore</h1>
-            <div id="user-greeting" class="user-greeting">Welcome Guest!</div>
+            <p class="tagline">Your Trusted Health Partner</p>
         </div>
     </header>
 
@@ -21,14 +22,14 @@
             <!-- Banner content will be loaded from Firebase -->
         </section>
 
-        <section class="categories-section">
+        <section class="content-section">
             <h2>Categories</h2>
             <div id="category-tabs" class="category-tabs">
                 <!-- Category tabs will be loaded from Firebase -->
             </div>
         </section>
 
-        <section class="products-section">
+        <section class="content-section">
             <h2>New Arrivals</h2>
             <div id="product-grid" class="product-grid">
                 <!-- Products will be loaded from Firebase -->
@@ -36,46 +37,51 @@
         </section>
     </main>
 
-    <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
-        <a href="index.html" class="nav-item active">Home</a>
-        <a href="#categories" class="nav-item">Categories</a>
-        <a href="#" class="nav-item">Search</a>
-        <a href="cart.html" class="nav-item cart-icon">
-            Cart
-            <span id="cart-badge" class="cart-badge">0</span>
-        </a>
-        <a href="profile.html" class="nav-item">Profile</a>
-    </nav>
-    
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal">
+    <!-- The New Checkout Modal -->
+    <div id="checkout-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>Login or Sign Up</h2>
-            <div class="login-options">
-                <div id="email-login-view">
-                    <input type="text" id="login-name" placeholder="Full Name">
-                    <input type="email" id="login-email" placeholder="Email Address">
-                    <input type="tel" id="login-phone" placeholder="Phone Number">
-                    <button id="send-email-link-btn">Send Login Link</button>
-                    <p>A secure, one-time login link will be sent to your email.</p>
+            <h2>Complete Your Order</h2>
+            
+            <div class="order-summary">
+                <h4>Order Summary</h4>
+                <div id="modal-product-summary">
+                    <!-- Product details will be injected here by JavaScript -->
                 </div>
-                <!-- Phone OTP Login can be added here as an alternative -->
             </div>
+
+            <form id="checkout-form">
+                <h4>Shipping Details</h4>
+                <input type="text" id="cust-name" placeholder="Full Name" required>
+                <input type="tel" id="cust-phone" placeholder="10-Digit Phone Number" required>
+                <input type="email" id="cust-email" placeholder="Email Address" required>
+                <input type="text" id="cust-vil" placeholder="Village / House No." required>
+                <input type="text" id="cust-po" placeholder="Post Office" required>
+                <input type="text" id="cust-dist" placeholder="District" required>
+                <input type="text" id="cust-pin" placeholder="Pincode" required>
+                <input type="text" id="cust-state" placeholder="State" required>
+                
+                <button type="submit" id="place-order-btn" class="place-order-btn">
+                    Pay Securely
+                </button>
+            </form>
         </div>
     </div>
 
+    <footer class="site-footer">
+        <p>&copy; 2025 ClinicStore. All Rights Reserved.</p>
+    </footer>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    
+    <!-- Razorpay Payment Gateway Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <!-- Your Scripts -->
     <script src="js/firebase-config.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/auth.js"></script>
 
 </body>
 </html>

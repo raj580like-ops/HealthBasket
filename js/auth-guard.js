@@ -1,37 +1,43 @@
 // js/auth-guard.js
 
 /**
- * This script acts as a "gatekeeper" for protected pages like profile.html.
- * It ensures that we wait for Firebase to confirm the user's login status
- * before showing the page content or redirecting.
+ * This is the "Patient Gatekeeper". Its only job is to wait for Firebase
+ * to determine the initial, stable login state, and then grant access or redirect.
+ * It unsubscribes itself after the first check to prevent any conflicts.
  */
 function authGuard() {
     const contentElement = document.getElementById('protected-content');
     const loadingElement = document.getElementById('loading-spinner');
 
-    // Show the loading spinner immediately
-    loadingElement.style.display = 'flex';
-    contentElement.style.display = 'none';
+    // Show the loading spinner immediately and hide the page content.
+    if (loadingElement) loadingElement.style.display = 'flex';
+    if (contentElement) contentElement.style.display = 'none';
 
-    auth.onAuthStateChanged(user => {
-        // This function can take a moment to run as it checks the session.
-        
-        // Hide the spinner now that we have an answer from Firebase.
-        loadingElement.style.display = 'none';
+    // ================================================================
+    // THE DEFINITIVE FIX IS HERE:
+    // We create a listener that automatically unsubscribes itself.
+    // This ensures it only runs ONCE, after Firebase has had time
+    // to check for a saved session in the browser's memory.
+    // ================================================================
+    const unsubscribe = auth.onAuthStateChanged(user => {
+        // Unsubscribe the listener immediately. We only care about the first result.
+        unsubscribe(); 
+
+        // Hide the spinner now that we have a definitive answer.
+        if (loadingElement) loadingElement.style.display = 'none';
 
         if (user) {
-            // SUCCESS: A user is logged in.
-            // Show the main content of the page.
-            console.log("Auth Guard: User is logged in. Access granted.");
-            contentElement.style.display = 'block';
+            // SUCCESS: A user session was found. Show the page.
+            console.log("Auth Guard: Access granted.");
+            if (contentElement) contentElement.style.display = 'block';
         } else {
-            // FAILURE: No user is logged in.
-            // Redirect to the homepage.
-            console.log("Auth Guard: No user found. Redirecting to home.");
-            window.location.replace('index.html'); // Use replace to prevent "back" button issues.
+            // FAILURE: No user session was found. Redirect to home.
+            console.log("Auth Guard: Access DENIED. Redirecting to home.");
+            // Use .replace() to prevent the user from clicking "back" to the broken page.
+            window.location.replace('index.html');
         }
     });
 }
 
-// Run the gatekeeper function as soon as the DOM is ready.
+// Run the gatekeeper as soon as the DOM is ready.
 document.addEventListener('DOMContentLoaded', authGuard);
